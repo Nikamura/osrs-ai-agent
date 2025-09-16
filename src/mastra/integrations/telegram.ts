@@ -1,0 +1,115 @@
+import TelegramBot from "node-telegram-bot-api";
+import { osrsAgent } from "../agents/osrs-agent";
+
+export class TelegramIntegration {
+  private bot: TelegramBot;
+  private readonly MAX_MESSAGE_LENGTH = 4096; // Telegram's message length limit
+  private readonly MAX_RESULT_LENGTH = 500; // Maximum length for tool results
+
+  constructor(token: string) {
+    // Create a bot instance
+    this.bot = new TelegramBot(token, { polling: true });
+
+    // Handle incoming messages
+    this.bot.on("message", this.handleMessage.bind(this));
+  }
+
+  private escapeMarkdown(text: string): string {
+    // Escape special Markdown characters
+    return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, "\\$&");
+  }
+
+  private truncateString(str: string, maxLength: number): string {
+    if (str.length <= maxLength) return str;
+    return str.substring(0, maxLength) + "... [truncated]";
+  }
+
+  private async updateOrSplitMessage(
+    chatId: number,
+    messageId: number | undefined,
+    text: string
+  ): Promise<number> {
+    // If text is within limits, try to update existing message
+    if (text.length <= this.MAX_MESSAGE_LENGTH && messageId) {
+      try {
+        await this.bot.editMessageText(text, {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: "MarkdownV2",
+        });
+        return messageId;
+      } catch (error) {
+        console.error("Error updating message:", error);
+      }
+    }
+
+    // If text is too long or update failed, send as new message
+    try {
+      const newMessage = await this.bot.sendMessage(chatId, text, {
+        parse_mode: "MarkdownV2",
+      });
+      return newMessage.message_id;
+    } catch (error) {
+      console.error("Error sending message:", error);
+      // If the message is still too long, truncate it
+      const truncated =
+        text.substring(0, this.MAX_MESSAGE_LENGTH - 100) +
+        "\n\n... [Message truncated due to length]";
+      const fallbackMsg = await this.bot.sendMessage(chatId, truncated, {
+        parse_mode: "MarkdownV2",
+      });
+      return fallbackMsg.message_id;
+    }
+  }
+
+  private async handleMessage(msg: TelegramBot.Message) {
+    const chatId = msg.chat.id;
+    const text = msg.text;
+    const username = msg.from?.username || "unknown";
+    const firstName = msg.from?.first_name || "unknown";
+    const userId = msg.from?.id.toString() || `anonymous-${chatId}`;
+
+    if (!text) {
+      await this.bot.sendMessage(
+        chatId,
+        "Sorry, I can only process text messages."
+      );
+      return;
+    }
+
+    try {
+      const sentMessage = await this.bot.sendMessage(chatId, "Thinking...");
+      let currentMessageId = sentMessage.message_id;
+
+      console.log({
+        content: `Current user: ${firstName} (${username})`,
+      });
+
+      const response = await osrsAgent.generateVNext(text, {
+        threadId: `tg-${chatId}`, // Use chat ID as thread ID
+        resourceId: "osrsAgent", // Use user ID as resource ID
+        context: [
+          {
+            role: "system",
+            content: `Current user: ${firstName} (${username})`,
+          },
+        ],
+      });
+
+      // Process the full stream
+
+      // Final update
+      await this.updateOrSplitMessage(
+        chatId,
+        currentMessageId,
+        this.escapeMarkdown(response.text)
+      );
+    } catch (error) {
+      console.error("Error processing message:", error);
+      await this.bot.sendMessage(
+        chatId,
+        "Sorry, I encountered an error processing your message. Please try again."
+      );
+    }
+  }
+}
