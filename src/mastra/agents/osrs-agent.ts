@@ -7,6 +7,7 @@ import { searchTool } from "../tools/search-tool";
 import { readPageTool } from "../tools/read-page-tool";
 import { Memory } from "@mastra/memory";
 import { LibSQLStore, LibSQLVector } from "@mastra/libsql";
+import { getPlayerLevelsTool } from "../tools/get-player-levels-tool";
 
 const memory = new Memory({
   embedder: fastembed,
@@ -20,11 +21,11 @@ const memory = new Memory({
     // Keep last 20 messages in context
     lastMessages: 20,
     // Enable semantic search to find relevant past conversations
-    semanticRecall: {
-      topK: 3,
-      messageRange: 2,
-      scope: "resource",
-    },
+    // semanticRecall: {
+    //   topK: 3,
+    //   messageRange: 2,
+    //   scope: "resource",
+    // },
   },
 });
 
@@ -75,6 +76,7 @@ Formatting examples (no source tags)
   tools: {
     searchTool,
     readPageTool,
+    getPlayerLevelsTool,
   },
   memory,
 });
