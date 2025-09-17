@@ -26,10 +26,10 @@ export const readPageTool = createTool({
         // writeFileSync(`${result.pageid}.html`, html, "utf-8");
         let md = html2md(html);
         // remove links [Tradeable](/w/Items#Tradeability "Items") leave only Tradeable text
-        md = md.replace(
-          /\[\s*!\[([^\]]+)\]\((?:[^)(]|\([^)]*\))+?\)\s*\]\((?:[^)(]|\([^)]*\))+?\)|\[(?!\s*!\[)([^\]]+)\]\((?:[^)(]|\([^)]*\))+?\)|\[\s*!\[\s*\]\((?:[^)(]|\([^)]*\))+?\)\s*\]\((?:[^)(]|\([^)]*\))+?\)/g,
-          "$1$2"
-        );
+        // md = md.replace(
+        //   /\[\s*!\[([^\]]+)\]\((?:[^)(]|\([^)]*\))+?\)\s*\]\((?:[^)(]|\([^)]*\))+?\)|\[(?!\s*!\[)([^\]]+)\]\((?:[^)(]|\([^)]*\))+?\)|\[\s*!\[\s*\]\((?:[^)(]|\([^)]*\))+?\)\s*\]\((?:[^)(]|\([^)]*\))+?\)/g,
+        //   "$1$2"
+        // );
         // writeFileSync(`${result.pageid}.md`, md, "utf-8");
         return {
           content: md,
