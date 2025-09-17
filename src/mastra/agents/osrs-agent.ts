@@ -1,15 +1,31 @@
 import { Agent } from "@mastra/core/agent";
 import { google } from "@ai-sdk/google";
 
+import { fastembed } from "@mastra/fastembed";
+
 import { searchTool } from "../tools/search-tool";
 import { readPageTool } from "../tools/read-page-tool";
 import { Memory } from "@mastra/memory";
-import { LibSQLStore } from "@mastra/libsql";
+import { LibSQLStore, LibSQLVector } from "@mastra/libsql";
 
 const memory = new Memory({
+  embedder: fastembed,
   storage: new LibSQLStore({
-    url: "file:../../memory.db",
+    url: "file:../../local.db",
   }),
+  vector: new LibSQLVector({
+    connectionUrl: "file:../../local.db",
+  }),
+  options: {
+    // Keep last 20 messages in context
+    lastMessages: 20,
+    // Enable semantic search to find relevant past conversations
+    semanticRecall: {
+      topK: 3,
+      messageRange: 2,
+      scope: "resource",
+    },
+  },
 });
 
 export const osrsAgent = new Agent({

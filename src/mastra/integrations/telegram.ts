@@ -24,6 +24,17 @@ export class TelegramIntegration {
     return str.substring(0, maxLength) + "... [truncated]";
   }
 
+  private formatToolResult(result: any): string {
+    try {
+      const jsonString = JSON.stringify(result, null, 2);
+      return this.escapeMarkdown(
+        this.truncateString(jsonString, this.MAX_RESULT_LENGTH)
+      );
+    } catch (error) {
+      return `[Complex data structure - ${typeof result}]`;
+    }
+  }
+
   private async updateOrSplitMessage(
     chatId: number,
     messageId: number | undefined,
@@ -68,6 +79,8 @@ export class TelegramIntegration {
     const username = msg.from?.username || "unknown";
     const firstName = msg.from?.first_name || "unknown";
     const userId = msg.from?.id.toString() || `anonymous-${chatId}`;
+    const threadId = `telegram-${chatId}`;
+    const resourceId = userId;
 
     if (!text) {
       await this.bot.sendMessage(
@@ -77,17 +90,26 @@ export class TelegramIntegration {
       return;
     }
 
+    if (msg.chat.type !== "private") {
+      await this.bot.sendMessage(
+        chatId,
+        "Sorry, I can only process messages in private chats."
+      );
+      return;
+    }
+
     try {
+      // Send initial message
       const sentMessage = await this.bot.sendMessage(chatId, "Thinking...");
+      let currentResponse = "";
+      let lastUpdate = Date.now();
       let currentMessageId = sentMessage.message_id;
+      const UPDATE_INTERVAL = 500; // Update every 500ms to avoid rate limits
 
-      console.log({
-        content: `Current user: ${firstName} (${username})`,
-      });
-
-      const response = await osrsAgent.generateVNext(text, {
-        threadId: `tg-${chatId}`, // Use chat ID as thread ID
-        resourceId: "osrsAgent", // Use user ID as resource ID
+      // Stream response using the agent
+      const stream = await osrsAgent.streamVNext(text, {
+        threadId, // Use chat ID as thread ID
+        resourceId, // Use user ID as resource ID
         context: [
           {
             role: "system",
@@ -97,12 +119,75 @@ export class TelegramIntegration {
       });
 
       // Process the full stream
+      for await (const chunk of stream.fullStream) {
+        let shouldUpdate = false;
+        let chunkText = "";
+
+        switch (chunk.type) {
+          case "text-delta":
+            chunkText = this.escapeMarkdown(chunk.payload.text);
+            shouldUpdate = true;
+            break;
+
+          // case "tool-call":
+          //   const formattedArgs = JSON.stringify(chunk.payload.args, null, 2);
+          //   chunkText = `\n🛠️ Using tool: ${this.escapeMarkdown(
+          //     chunk.payload.toolName
+          //   )}\nArguments:\n\`\`\`\n${this.escapeMarkdown(
+          //     formattedArgs
+          //   )}\n\`\`\`\n`;
+          //   console.log(
+          //     `Tool call: ${chunk.payload.toolName}`,
+          //     chunk.payload.args
+          //   );
+          //   shouldUpdate = true;
+          //   break;
+
+          // case "tool-result":
+          //   const formattedResult = this.formatToolResult(chunk.payload.result);
+          //   chunkText = `✨ Result:\n\`\`\`\n${formattedResult}\n\`\`\`\n`;
+          //   console.log("Tool result:", chunk.payload.result);
+          //   shouldUpdate = true;
+          //   break;
+
+          case "error":
+            chunkText = `\n❌ Error: ${this.escapeMarkdown(
+              String(chunk.payload.error)
+            )}\n`;
+            console.error("Error:", chunk.payload.error);
+            shouldUpdate = true;
+            break;
+
+          // case "reasoning-delta":
+          //   chunkText = `\n💭 ${this.escapeMarkdown(chunk.payload.text)}\n`;
+          //   console.log("Reasoning:", chunk.payload.text);
+          //   shouldUpdate = true;
+          //   break;
+        }
+
+        if (shouldUpdate) {
+          currentResponse += chunkText;
+          const now = Date.now();
+          if (now - lastUpdate >= UPDATE_INTERVAL) {
+            try {
+              currentMessageId = await this.updateOrSplitMessage(
+                chatId,
+                currentMessageId,
+                currentResponse
+              );
+              lastUpdate = now;
+            } catch (error) {
+              console.error("Error updating/splitting message:", error);
+            }
+          }
+        }
+      }
 
       // Final update
       await this.updateOrSplitMessage(
         chatId,
         currentMessageId,
-        this.escapeMarkdown(response.text)
+        currentResponse
       );
     } catch (error) {
       console.error("Error processing message:", error);
