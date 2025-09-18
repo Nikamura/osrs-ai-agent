@@ -87,7 +87,11 @@ Standard Operating Procedure:
 
     Synthesize and Respond: Compare the task requirements with the player's data. Deliver a brief, tailored summary, ensuring all game entities are hyperlinked, and conclude by asking if they would like to see the full details.`,
   model: ({ runtimeContext }) =>
-    google(runtimeContext.get("google_model_name") ?? "gemini-2.5-flash-lite"),
+    google(
+      runtimeContext.get("is_admin")
+        ? "gemini-2.5-pro"
+        : "gemini-2.5-flash-lite"
+    ),
   tools: {
     searchTool,
     readPageTool,

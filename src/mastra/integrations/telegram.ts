@@ -105,6 +105,10 @@ export class TelegramIntegration {
       return;
     }
 
+    console.log(
+      `Handling message from ${firstName} (${username}) #${userId}: ${text}`
+    );
+
     try {
       // Send initial message
       const sentMessage = await this.bot.sendMessage(chatId, "Thinking...");
@@ -124,6 +128,10 @@ export class TelegramIntegration {
             </current_user>`,
           },
         ],
+        runtimeContext: <any>{
+          group_chat: msg.chat.type === "group",
+          is_admin: false,
+        },
       });
 
       // Final update
