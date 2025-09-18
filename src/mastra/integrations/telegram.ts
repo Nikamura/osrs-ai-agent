@@ -88,7 +88,7 @@ export class TelegramIntegration {
     const username = msg.from?.username || "unknown";
     const firstName = msg.from?.first_name || "unknown";
     const userId = msg.from?.id.toString() || `anonymous-${chatId}`;
-    const threadId = `telegram-${chatId}`;
+    const threadId = `telegram-${chatId}-${userId}`;
     const resourceId = userId;
 
     if (!text) {
