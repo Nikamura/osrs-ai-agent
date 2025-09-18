@@ -81,7 +81,7 @@ Standard Operating Procedure:
     Fetch Task-Specific Data: Use tools to look up the specific quest, item, or topic the user asked about.
 
     Synthesize and Respond: Compare the task requirements with the player's data. Deliver a brief, tailored summary, ensuring all game entities are hyperlinked, and conclude by asking if they would like to see the full details.`,
-  model: google("gemini-2.5-flash"),
+  model: google("gemini-2.5-flash-lite"),
   tools: {
     searchTool,
     readPageTool,
