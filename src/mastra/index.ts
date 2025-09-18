@@ -7,11 +7,11 @@ import { TelegramIntegration } from "./integrations/telegram";
 export const mastra = new Mastra({
   agents: { osrsAgent },
   storage: new LibSQLStore({
-    url: ":memory:",
+    url: "file:local.db",
   }),
   logger: new PinoLogger({
     name: "Mastra",
-    level: "info",
+    level: "debug",
   }),
 });
 

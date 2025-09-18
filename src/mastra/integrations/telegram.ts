@@ -1,5 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import { osrsAgent } from "../agents/osrs-agent";
+import telegramifyMarkdown from "telegramify-markdown";
 
 export class TelegramIntegration {
   private bot: TelegramBot;
@@ -15,8 +16,9 @@ export class TelegramIntegration {
   }
 
   private escapeMarkdown(text: string): string {
+    return telegramifyMarkdown(text, "remove");
     // Escape special Markdown characters
-    return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, "\\$&");
+    // return text.replace(/(?<!\\)[_[\]()~`>#+=|{}.!-]/g, "\\$&");
   }
 
   private truncateString(str: string, maxLength: number): string {
@@ -50,7 +52,18 @@ export class TelegramIntegration {
         });
         return messageId;
       } catch (error) {
-        console.error("Error updating message:", error);
+        if (error instanceof Error) {
+          if (
+            error.message.includes(
+              "message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message"
+            )
+          ) {
+            return messageId;
+          }
+        }
+        if (error instanceof Error) {
+          console.error("Error updating message:", error.message);
+        }
       }
     }
 
@@ -61,7 +74,9 @@ export class TelegramIntegration {
       });
       return newMessage.message_id;
     } catch (error) {
-      console.error("Error sending message:", error);
+      if (error instanceof Error) {
+        console.error("Error sending message:", error.message);
+      }
       // If the message is still too long, truncate it
       const truncated =
         text.substring(0, this.MAX_MESSAGE_LENGTH - 100) +
@@ -101,96 +116,35 @@ export class TelegramIntegration {
     try {
       // Send initial message
       const sentMessage = await this.bot.sendMessage(chatId, "Thinking...");
-      let currentResponse = "";
-      let lastUpdate = Date.now();
       let currentMessageId = sentMessage.message_id;
-      const UPDATE_INTERVAL = 500; // Update every 500ms to avoid rate limits
 
       // Stream response using the agent
-      const stream = await osrsAgent.streamVNext(text, {
+      const generate = await osrsAgent.generateVNext(text, {
         threadId, // Use chat ID as thread ID
         resourceId, // Use user ID as resource ID
         context: [
           {
             role: "system",
-            content: `Current user: ${firstName} (${username})`,
+            content: `
+            <current_user>
+            <first_name>${firstName}</first_name>
+            <telegram_username>${username}</telegram_username>
+            </current_user>`,
           },
         ],
       });
-
-      // Process the full stream
-      for await (const chunk of stream.fullStream) {
-        let shouldUpdate = false;
-        let chunkText = "";
-
-        switch (chunk.type) {
-          case "text-delta":
-            chunkText = this.escapeMarkdown(chunk.payload.text);
-            shouldUpdate = true;
-            break;
-
-          // case "tool-call":
-          //   const formattedArgs = JSON.stringify(chunk.payload.args, null, 2);
-          //   chunkText = `\n🛠️ Using tool: ${this.escapeMarkdown(
-          //     chunk.payload.toolName
-          //   )}\nArguments:\n\`\`\`\n${this.escapeMarkdown(
-          //     formattedArgs
-          //   )}\n\`\`\`\n`;
-          //   console.log(
-          //     `Tool call: ${chunk.payload.toolName}`,
-          //     chunk.payload.args
-          //   );
-          //   shouldUpdate = true;
-          //   break;
-
-          // case "tool-result":
-          //   const formattedResult = this.formatToolResult(chunk.payload.result);
-          //   chunkText = `✨ Result:\n\`\`\`\n${formattedResult}\n\`\`\`\n`;
-          //   console.log("Tool result:", chunk.payload.result);
-          //   shouldUpdate = true;
-          //   break;
-
-          case "error":
-            chunkText = `\n❌ Error: ${this.escapeMarkdown(
-              String(chunk.payload.error)
-            )}\n`;
-            console.error("Error:", chunk.payload.error);
-            shouldUpdate = true;
-            break;
-
-          // case "reasoning-delta":
-          //   chunkText = `\n💭 ${this.escapeMarkdown(chunk.payload.text)}\n`;
-          //   console.log("Reasoning:", chunk.payload.text);
-          //   shouldUpdate = true;
-          //   break;
-        }
-
-        if (shouldUpdate) {
-          currentResponse += chunkText;
-          const now = Date.now();
-          if (now - lastUpdate >= UPDATE_INTERVAL) {
-            try {
-              currentMessageId = await this.updateOrSplitMessage(
-                chatId,
-                currentMessageId,
-                currentResponse
-              );
-              lastUpdate = now;
-            } catch (error) {
-              console.error("Error updating/splitting message:", error);
-            }
-          }
-        }
-      }
 
       // Final update
       await this.updateOrSplitMessage(
         chatId,
         currentMessageId,
-        currentResponse
+        this.escapeMarkdown(generate.text)
       );
     } catch (error) {
-      console.error("Error processing message:", error);
+      if (error instanceof Error) {
+        console.error("Error processing message:", error.message);
+      }
+
       await this.bot.sendMessage(
         chatId,
         "Sorry, I encountered an error processing your message. Please try again."
