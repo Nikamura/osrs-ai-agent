@@ -90,10 +90,10 @@ export class TelegramIntegration {
     const resourceId = userId;
 
     if (!text) {
-      await this.bot.sendMessage(
-        chatId,
-        "Sorry, I can only process text messages."
-      );
+      // await this.bot.sendMessage(
+      //   chatId,
+      //   "Sorry, I can only process text messages."
+      // );
       return;
     }
 
