@@ -105,11 +105,11 @@ export class TelegramIntegration {
       return;
     }
 
-    if (msg.chat.type !== "private") {
-      await this.bot.sendMessage(
-        chatId,
-        "Sorry, I can only process messages in private chats."
-      );
+    if (
+      msg.chat.type !== "private" &&
+      !msg.text?.includes("@rosetta_stone_bot") &&
+      !msg.text?.includes("@osrs_ai_bot")
+    ) {
       return;
     }
 
