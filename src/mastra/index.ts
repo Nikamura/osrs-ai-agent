@@ -11,7 +11,7 @@ export const mastra = new Mastra({
   }),
   logger: new PinoLogger({
     name: "Mastra",
-    level: "debug",
+    level: "info",
   }),
 });
 

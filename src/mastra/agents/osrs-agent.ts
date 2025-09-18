@@ -65,7 +65,7 @@ Standard Operating Procedure:
     Formulate Query: Construct a precise query for the selected tool based on the keywords in the user's message.
 
     Synthesize and Respond: Receive the data from the tool and format it into a clear, helpful response for the Telegram chat. Cite your sources where appropriate (e.g., "According to the OSRS Wiki...").`,
-  model: google("gemini-2.5-flash"),
+  model: google("gemini-2.5-pro"),
   tools: {
     searchTool,
     readPageTool,
