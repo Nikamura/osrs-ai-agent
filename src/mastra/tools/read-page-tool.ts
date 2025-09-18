@@ -1,6 +1,7 @@
 import { createTool } from "@mastra/core";
 import z from "zod";
 import { bot } from "../integrations/osrs-wiki";
+import html2md from "html-to-md";
 
 export const readPageTool = createTool({
   id: "read-page",
@@ -10,7 +11,7 @@ export const readPageTool = createTool({
     pageid: z.number(),
   }),
   outputSchema: z.object({
-    html: z.string().describe("Rendered HTML of the page"),
+    md: z.string().describe("HTML of the page converted to MD"),
     title: z.string().describe("Title of the page"),
     pageid: z.number().describe("Page ID of the page"),
     url: z.string().describe("URL of the page on OSRS Wiki"),
@@ -28,7 +29,7 @@ export const readPageTool = createTool({
 
         const html = await bot.parseWikitext(content);
         // writeFileSync(`${result.pageid}.html`, html, "utf-8");
-        // let md = html2md(html);
+        let md = html2md(html);
         // // remove links [Tradeable](/w/Items#Tradeability "Items") leave only Tradeable text
         // md = md.replace(
         //   /\[\s*!\[([^\]]+)\]\((?:[^)(]|\([^)]*\))+?\)\s*\]\((?:[^)(]|\([^)]*\))+?\)|\[(?!\s*!\[)([^\]]+)\]\((?:[^)(]|\([^)]*\))+?\)|\[\s*!\[\s*\]\((?:[^)(]|\([^)]*\))+?\)\s*\]\((?:[^)(]|\([^)]*\))+?\)/g,
@@ -42,7 +43,7 @@ export const readPageTool = createTool({
         const url = `https://oldschool.runescape.wiki/w/${encodeURIComponent(result.title.replace(/\s+/g, "_"))}`;
         return {
           title: result.title,
-          html: html,
+          md: md,
           pageid: result.pageid,
           url: url,
         };
