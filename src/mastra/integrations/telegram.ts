@@ -26,17 +26,6 @@ export class TelegramIntegration {
     return str.substring(0, maxLength) + "... [truncated]";
   }
 
-  private formatToolResult(result: any): string {
-    try {
-      const jsonString = JSON.stringify(result, null, 2);
-      return this.escapeMarkdown(
-        this.truncateString(jsonString, this.MAX_RESULT_LENGTH)
-      );
-    } catch (error) {
-      return `[Complex data structure - ${typeof result}]`;
-    }
-  }
-
   private async updateOrSplitMessage(
     chatId: number,
     messageId: number | undefined,
@@ -49,6 +38,7 @@ export class TelegramIntegration {
           chat_id: chatId,
           message_id: messageId,
           parse_mode: "MarkdownV2",
+          disable_web_page_preview: true,
         });
         return messageId;
       } catch (error) {
@@ -71,6 +61,7 @@ export class TelegramIntegration {
     try {
       const newMessage = await this.bot.sendMessage(chatId, text, {
         parse_mode: "MarkdownV2",
+        disable_web_page_preview: true,
       });
       return newMessage.message_id;
     } catch (error) {
@@ -83,6 +74,7 @@ export class TelegramIntegration {
         "\n\n... [Message truncated due to length]";
       const fallbackMsg = await this.bot.sendMessage(chatId, truncated, {
         parse_mode: "MarkdownV2",
+        disable_web_page_preview: true,
       });
       return fallbackMsg.message_id;
     }
