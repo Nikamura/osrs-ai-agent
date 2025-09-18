@@ -20,7 +20,7 @@ const memory = new Memory({
   }),
   options: {
     // Keep last 20 messages in context
-    lastMessages: 20,
+    lastMessages: 3,
     workingMemory: {
       enabled: true,
       template: `<user>
