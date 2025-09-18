@@ -33,8 +33,11 @@ const memory = new Memory({
     },
     // Enable semantic search to find relevant past conversations
     semanticRecall: {
-      topK: 3,
-      messageRange: 2,
+      topK: 2,
+      messageRange: {
+        before: 2,
+        after: 1,
+      },
       scope: "resource",
     },
   },
