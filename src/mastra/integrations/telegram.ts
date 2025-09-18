@@ -118,7 +118,7 @@ export class TelegramIntegration {
 
       const runtimeContext = new RuntimeContext<SupportRuntimeContext>();
       runtimeContext.set("group_chat", msg.chat.type === "group");
-      runtimeContext.set("is_admin", false);
+      runtimeContext.set("is_admin", ["1388135549"].includes(userId));
 
       const agent = mastra.getAgent("osrsAgent");
       const generate = await agent.generateVNext(text, {
