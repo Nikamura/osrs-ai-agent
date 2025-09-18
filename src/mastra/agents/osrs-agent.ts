@@ -10,6 +10,11 @@ import { LibSQLStore, LibSQLVector } from "@mastra/libsql";
 import { getPlayerLevelsTool } from "../tools/get-player-levels-tool";
 import { getPlayerQuestsTool } from "../tools/get-player-quests-tool";
 
+export type SupportRuntimeContext = {
+  group_chat: boolean;
+  is_admin: boolean;
+};
+
 const memory = new Memory({
   embedder: fastembed,
   storage: new LibSQLStore({

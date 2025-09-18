@@ -1,6 +1,8 @@
 import TelegramBot from "node-telegram-bot-api";
-import { osrsAgent } from "../agents/osrs-agent";
+import { osrsAgent, SupportRuntimeContext } from "../agents/osrs-agent";
 import telegramifyMarkdown from "telegramify-markdown";
+import { RuntimeContext } from "@mastra/core/runtime-context";
+import { mastra } from "..";
 
 export class TelegramIntegration {
   private bot: TelegramBot;
@@ -114,8 +116,12 @@ export class TelegramIntegration {
       const sentMessage = await this.bot.sendMessage(chatId, "Thinking...");
       let currentMessageId = sentMessage.message_id;
 
-      // Stream response using the agent
-      const generate = await osrsAgent.generateVNext(text, {
+      const runtimeContext = new RuntimeContext<SupportRuntimeContext>();
+      runtimeContext.set("group_chat", msg.chat.type === "group");
+      runtimeContext.set("is_admin", false);
+
+      const agent = mastra.getAgent("osrsAgent");
+      const generate = await agent.generateVNext(text, {
         threadId, // Use chat ID as thread ID
         resourceId, // Use user ID as resource ID
         context: [
@@ -128,10 +134,7 @@ export class TelegramIntegration {
             </current_user>`,
           },
         ],
-        runtimeContext: <any>{
-          group_chat: msg.chat.type === "group",
-          is_admin: false,
-        },
+        runtimeContext,
       });
 
       // Final update
