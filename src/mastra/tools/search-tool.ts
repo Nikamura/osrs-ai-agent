@@ -25,7 +25,11 @@ export const searchTool = createTool({
   outputSchema: z.object({
     pages: PagesType,
   }),
-  execute: async ({ context }) => {
+  execute: async ({ context, mastra }) => {
+    const logger = mastra?.getLogger();
+    logger?.info(
+      `[search-osrs-wiki] Searching for query: "${context.query}" with max results: ${context.max ?? 10}`
+    );
     const result = await bot.search(context.query, context.max ?? 10);
     return { pages: PagesType.parse(result) };
   },

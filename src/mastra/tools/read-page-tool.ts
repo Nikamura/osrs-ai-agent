@@ -15,7 +15,9 @@ export const readPageTool = createTool({
     pageid: z.number().describe("Page ID of the page"),
     url: z.string().describe("URL of the page on OSRS Wiki"),
   }),
-  execute: async ({ context }) => {
+  execute: async ({ context, mastra }) => {
+    const logger = mastra?.getLogger();
+    logger?.info(`[read-page] Reading page with ID: ${context.pageid}`);
     const result = await bot.read(context.pageid);
     if (result.revisions && result.revisions[0]?.content) {
       const lastRevision = result.revisions[0];

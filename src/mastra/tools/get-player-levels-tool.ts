@@ -10,7 +10,11 @@ export const getPlayerLevelsTool = createTool({
   outputSchema: z.object({
     levels: z.record(z.string(), z.number().int()),
   }),
-  execute: async ({ context }) => {
+  execute: async ({ context, mastra }) => {
+    const logger = mastra?.getLogger();
+    logger?.info(
+      `[get-player-levels] Fetching levels for player: ${context.name}`
+    );
     const resp = await fetch(
       `https://sync.runescape.wiki/runelite/player/${context.name}/STANDARD`,
       {
