@@ -5,7 +5,7 @@ This project provides a Telegram-ready assistant for Old School RuneScape using 
 ### Tools
 
 - search-osrs-wiki: Search main OSRS Wiki articles.
-- search-osrs-wiki-guides: Search Supplemental Guides in the `Guide:` namespace.
+- search-osrs-wiki-guides: Search Supplemental Guides in the `Guide:` namespace. Returns `snippet` in results.
 - read-page: Fetch and convert a wiki page to Markdown.
 - get-player-levels, get-player-quests: Fetch player info.
 
@@ -22,6 +22,24 @@ await tools.searchGuidesTool.call({ query: "UIM herblore", max: 5 })
 ```
 
 This returns pages from the `Guide:` namespace, such as "Guide:UIM Herblore training".
+
+Guide search also returns a `snippet?: string` with highlighted HTML similar to on-wiki search.
+
+### Update: `search-osrs-wiki` now returns snippets
+
+The `search-osrs-wiki` tool now includes a short HTML snippet for each result, mirroring on-wiki search excerpts.
+
+- **Output shape**: Each item in `pages` now has a `snippet?: string` field in addition to `title`, `pageid`, `size`, `wordcount`, and `timestamp`.
+- **Notes**: The snippet may contain HTML with `<span class="searchmatch">` highlights.
+
+Example (pseudo):
+
+```ts
+const { pages } = await tools.searchTool.call({ query: "ahrim's staff", max: 5 });
+for (const p of pages) {
+  console.log(p.title, p.snippet);
+}
+```
 
 ### Development
 

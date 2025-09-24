@@ -9,6 +9,7 @@ const PagesType = z.array(
     size: z.number(),
     wordcount: z.number(),
     timestamp: z.string(),
+    snippet: z.string().optional(),
   })
 );
 
@@ -30,7 +31,38 @@ export const searchTool = createTool({
     logger?.info(
       `[search-osrs-wiki] Searching for query: "${context.query}" with max results: ${context.max ?? 10}`
     );
-    const result = await bot.search(context.query, context.max ?? 10);
-    return { pages: PagesType.parse(result) };
+    // Request additional props to include snippets similar to on-wiki search
+    const result = await bot.search(
+      context.query,
+      context.max ?? 10,
+      [
+        "size",
+        "timestamp",
+        "wordcount",
+        "snippet",
+        "titlesnippet",
+        "sectionsnippet",
+        "redirectsnippet",
+      ],
+      {
+        // wrap in <span class="searchmatch"> like wiki does; we can keep raw HTML
+        srprop: [
+          "size",
+          "timestamp",
+          "wordcount",
+          "snippet",
+          "titlesnippet",
+          "sectionsnippet",
+          "redirectsnippet",
+        ] as any,
+      } as any
+    );
+
+    // Ensure compatibility with schema: pick `snippet` if provided
+    const pagesWithSnippet = result.map((p: any) => ({
+      ...p,
+      snippet: p.snippet,
+    }));
+    return { pages: PagesType.parse(pagesWithSnippet) };
   },
 });

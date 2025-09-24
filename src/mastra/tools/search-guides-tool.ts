@@ -9,6 +9,7 @@ const PagesType = z.array(
     size: z.number(),
     wordcount: z.number(),
     timestamp: z.string(),
+    snippet: z.string().optional(),
   })
 );
 
@@ -54,10 +55,34 @@ export const searchGuidesTool = createTool({
     const result = await bot.search(
       context.query,
       context.max ?? 10,
-      undefined,
-      { srnamespace: guideNsId }
+      [
+        "size",
+        "timestamp",
+        "wordcount",
+        "snippet",
+        "titlesnippet",
+        "sectionsnippet",
+        "redirectsnippet",
+      ],
+      {
+        srnamespace: guideNsId,
+        srprop: [
+          "size",
+          "timestamp",
+          "wordcount",
+          "snippet",
+          "titlesnippet",
+          "sectionsnippet",
+          "redirectsnippet",
+        ] as any,
+      } as any
     );
 
-    return { pages: PagesType.parse(result) };
+    const pagesWithSnippet = result.map((p: any) => ({
+      ...p,
+      snippet: p.snippet,
+    }));
+
+    return { pages: PagesType.parse(pagesWithSnippet) };
   },
 });
