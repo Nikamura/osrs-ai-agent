@@ -2,7 +2,7 @@ import TelegramBot from "node-telegram-bot-api";
 import { SupportRuntimeContext } from "../agents/osrs-agent";
 import telegramifyMarkdown from "telegramify-markdown";
 import { RuntimeContext } from "@mastra/core/runtime-context";
-import { mastra } from "../mastra";
+import { mastra } from "../index";
 
 export class TelegramIntegration {
   private bot: TelegramBot;
