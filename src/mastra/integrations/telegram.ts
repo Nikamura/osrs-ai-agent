@@ -2,14 +2,16 @@ import TelegramBot from "node-telegram-bot-api";
 import { SupportRuntimeContext } from "../agents/osrs-agent";
 import telegramifyMarkdown from "telegramify-markdown";
 import { RuntimeContext } from "@mastra/core/runtime-context";
-import { mastra } from "../index";
+import { Mastra } from "@mastra/core";
 
 export class TelegramIntegration {
   private bot: TelegramBot;
   private readonly MAX_MESSAGE_LENGTH = 4096; // Telegram's message length limit
-  private readonly MAX_RESULT_LENGTH = 500; // Maximum length for tool results
 
-  constructor(token: string) {
+  constructor(
+    token: string,
+    private readonly mastra: Mastra
+  ) {
     // Create a bot instance
     this.bot = new TelegramBot(token, { polling: true });
 
@@ -21,11 +23,6 @@ export class TelegramIntegration {
     return telegramifyMarkdown(text, "remove");
     // Escape special Markdown characters
     // return text.replace(/(?<!\\)[_[\]()~`>#+=|{}.!-]/g, "\\$&");
-  }
-
-  private truncateString(str: string, maxLength: number): string {
-    if (str.length <= maxLength) return str;
-    return str.substring(0, maxLength) + "... [truncated]";
   }
 
   private async updateOrSplitMessage(
@@ -91,6 +88,10 @@ export class TelegramIntegration {
     const threadId = `telegram-${chatId}-${userId}`;
     const resourceId = userId;
 
+    console.log(
+      `Handling message from ${firstName} (${username}) #${userId}: ${text}`
+    );
+
     if (!text) {
       // await this.bot.sendMessage(
       //   chatId,
@@ -106,11 +107,6 @@ export class TelegramIntegration {
     ) {
       return;
     }
-
-    console.log(
-      `Handling message from ${firstName} (${username}) #${userId}: ${text}`
-    );
-
     try {
       // Send initial message
       const sentMessage = await this.bot.sendMessage(chatId, "Thinking...");
@@ -120,7 +116,7 @@ export class TelegramIntegration {
       runtimeContext.set("group_chat", msg.chat.type === "group");
       runtimeContext.set("is_admin", ["1388135549"].includes(userId));
 
-      const agent = mastra.getAgent("osrsAgent");
+      const agent = this.mastra.getAgent("osrsAgent");
       const generate = await agent.generateVNext(text, {
         threadId, // Use chat ID as thread ID
         resourceId, // Use user ID as resource ID
