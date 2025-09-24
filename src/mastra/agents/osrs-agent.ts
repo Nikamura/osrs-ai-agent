@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { google } from "@ai-sdk/google";
+import { xai } from "@ai-sdk/xai";
 
 import { fastembed } from "@mastra/fastembed";
 
@@ -24,43 +24,43 @@ const memory = new Memory({
     connectionUrl: "file:../../local.db",
   }),
   options: {
-    // Keep last 20 messages in context
     lastMessages: 3,
     workingMemory: {
       enabled: true,
-      template: `<user>
-          <first_name></first_name>
-          <osrs_username></osrs_username>
-          <osrs_goals></osrs_goals>
-          <osrs_interests></osrs_interests>
-        </user>`,
+      template: `# User Profile
+- **Old School RuneScape Name**: <osrs_username>
+- **User levels**: <user_levels>
+- **User Quests**: <user_quests>
+
+Last updated: <last_updated>`,
       scope: "resource",
     },
-    // Enable semantic search to find relevant past conversations
-    semanticRecall: {
-      topK: 2,
-      messageRange: {
-        before: 2,
-        after: 1,
-      },
-      scope: "resource",
-    },
+    semanticRecall: false,
+    // {
+    //   topK: 2,
+    //   messageRange: {
+    //     before: 2,
+    //     after: 1,
+    //   },
+    //   scope: "resource",
+    // },
   },
 });
 
 export const osrsAgent = new Agent({
   name: "OSRS Assistant",
-  instructions: ({ runtimeContext }) => `Role and Goal:
+  instructions: ({ runtimeContext }) =>
+    `Role and Goal:
 
 You are a helpful and knowledgeable assistant for the game Old School RuneScape, operating within Telegram. Your primary goal is to provide personalized and accurate information to players. Your tone should be friendly and encouraging, like an experienced player guiding a newcomer.
 
-${runtimeContext?.get("group_chat") ? "Group Chat Brevity: All responses must be extremely concise and non-conversational. Provide only the direct answer or a minimal summary. Do not ask follow-up questions, including asking for a RuneScape Name (RSN); give a general, non-personalized answer if the RSN is not provided. You must still offer to expand on the information." : ""}
+${runtimeContext?.get("group_chat") === true ? "Group Chat Brevity: All responses must be extremely concise and non-conversational. Provide only the direct answer or a minimal summary. Do not ask follow-up questions, including asking for a RuneScape Name (RSN); give a general, non-personalized answer if the RSN is not provided. You must still offer to expand on the information." : ""}
 
 Core Directives:
 
     Player Context is Paramount:
 
-        Obtain RSN: Before providing any suggestions about gear, quests, or activities, you must have the user's RuneScape Name (RSN). If you don't have it, your first response must be to ask for it, explaining that you need it to give them tailored advice.
+        Obtain RSN: Before providing any suggestions about gear, quests, or activities, you must have the user's RuneScape Name (osrs_username). If you don't have it, your first response must be to ask for it, explaining that you need it to give them tailored advice.
 
         Proactive Stat Check: Once you have the RSN, you must immediately use your tools to fetch the player's current skill levels and completed quests. This context is mandatory for formulating your answer.
 
@@ -91,12 +91,7 @@ Standard Operating Procedure:
     Fetch Task-Specific Data: Use tools to look up the specific quest, item, or topic the user asked about.
 
     Synthesize and Respond: Compare the task requirements with the player's data. Deliver a brief, tailored summary, ensuring all game entities are hyperlinked, and conclude by asking if they would like to see the full details.`,
-  model: ({ runtimeContext }) =>
-    google(
-      runtimeContext?.get("is_admin")
-        ? "gemini-2.5-pro"
-        : "gemini-2.5-flash-lite"
-    ),
+  model: xai("grok-4-fast"), // -non-reasoning
   tools: {
     searchTool,
     readPageTool,
