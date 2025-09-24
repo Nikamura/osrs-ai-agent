@@ -30,6 +30,7 @@ const memory = new Memory({
       enabled: true,
       template: `# User Profile
 - **Old School RuneScape Name**: <osrs_username>
+- **Iron man**: <iron_man>
 
 Last updated: <last_updated_date_with_time>`,
       scope: "resource",
