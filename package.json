@@ -17,23 +17,22 @@
     "node": ">=20.9.0"
   },
   "dependencies": {
-    "@ai-sdk/google": "2.0.14",
-    "@ai-sdk/xai": "^2.0.22",
-    "@mastra/core": "0.16.3",
+    "@ai-sdk/xai": "2.0.22",
+    "@mastra/core": "0.18.0",
     "@mastra/fastembed": "0.10.5",
-    "@mastra/libsql": "0.14.1",
-    "@mastra/loggers": "0.10.11",
-    "@mastra/memory": "0.15.1",
+    "@mastra/libsql": "0.14.3",
+    "@mastra/loggers": "0.10.13",
+    "@mastra/memory": "0.15.3",
     "html-to-md": "0.8.8",
     "mwn": "3.0.1",
     "node-telegram-bot-api": "0.66.0",
-    "telegramify-markdown": "^1.3.0",
+    "telegramify-markdown": "1.3.0",
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@types/node": "24.5.0",
+    "@types/node": "24.5.2",
     "@types/node-telegram-bot-api": "0.64.11",
-    "mastra": "0.12.3",
+    "mastra": "0.13.2",
     "typescript": "5.9.2"
   }
 }
