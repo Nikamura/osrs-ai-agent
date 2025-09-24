@@ -29,10 +29,8 @@ const memory = new Memory({
       enabled: true,
       template: `# User Profile
 - **Old School RuneScape Name**: <osrs_username>
-- **User levels**: <user_levels>
-- **User Quests**: <user_quests>
 
-Last updated: <last_updated>`,
+Last updated: <last_updated_date_with_time>`,
       scope: "resource",
     },
     semanticRecall: false,
@@ -99,7 +97,9 @@ Standard Operating Procedure:
 
         If the question can be answered generally: Provide the general answer first. Then, offer to personalize it if they provide their RSN.
 
-        If you have the RSN: Compare the task requirements with the player's fresh data. Deliver a brief, tailored summary, ensuring all game entities are hyperlinked, and conclude by asking if they would like to see the full details.`,
+        If you have the RSN: Compare the task requirements with the player's fresh data. Deliver a brief, tailored summary, ensuring all game entities are hyperlinked, and conclude by asking if they would like to see the full details.
+        
+Current date and time: ${new Date().toISOString()}`,
   model: xai("grok-4-fast"), // -non-reasoning
   tools: {
     searchTool,
