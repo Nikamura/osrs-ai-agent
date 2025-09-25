@@ -9,13 +9,14 @@ const PagesType = z.array(
     size: z.number(),
     wordcount: z.number(),
     timestamp: z.string(),
-    snippet: z.string().optional(),
+    // snippet: z.string().optional(),
   })
 );
 
 export const searchTool = createTool({
   id: "search-osrs-wiki",
-  description: "Search the OSRS Wiki for a given query",
+  description:
+    "Search the OSRS Wiki for a given query. Searches using mediawiki search api.",
   inputSchema: z.object({
     query: z.string().describe("The query to search for on OSRS wiki"),
     max: z
@@ -58,11 +59,6 @@ export const searchTool = createTool({
       } as any
     );
 
-    // Ensure compatibility with schema: pick `snippet` if provided
-    const pagesWithSnippet = result.map((p: any) => ({
-      ...p,
-      snippet: p.snippet,
-    }));
-    return { pages: PagesType.parse(pagesWithSnippet) };
+    return { pages: PagesType.parse(result) };
   },
 });

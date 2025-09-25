@@ -1,6 +1,5 @@
 import TelegramBot from "node-telegram-bot-api";
 import { SupportRuntimeContext } from "../agents/osrs-agent";
-import telegramifyMarkdown from "telegramify-markdown";
 import { RuntimeContext } from "@mastra/core/runtime-context";
 import { Mastra } from "@mastra/core";
 
@@ -20,9 +19,9 @@ export class TelegramIntegration {
   }
 
   private escapeMarkdown(text: string): string {
-    return telegramifyMarkdown(text, "remove");
-    // Escape special Markdown characters
-    // return text.replace(/(?<!\\)[_[\]()~`>#+=|{}.!-]/g, "\\$&");
+    // Escape Telegram MarkdownV2 reserved characters
+    // Reserved: _ * [ ] ( ) ~ ` > # + - = | { } . ! and \
+    return text.replace(/([_*!\[\]()~`>#+\-=|{}.!\\])/g, "\\$1");
   }
 
   private async updateOrSplitMessage(
