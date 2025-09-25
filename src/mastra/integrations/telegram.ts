@@ -163,6 +163,8 @@ export class TelegramIntegration {
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error processing message:", error.message);
+      } else {
+        console.error("Error processing message:", error);
       }
 
       await this.bot.sendMessage(
