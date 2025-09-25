@@ -28,7 +28,8 @@ export class TelegramIntegration {
   private async updateOrSplitMessage(
     chatId: number,
     messageId: number | undefined,
-    text: string
+    text: string,
+    replyToMessageId?: number
   ): Promise<number> {
     // If text is within limits, try to update existing message
     if (text.length <= this.MAX_MESSAGE_LENGTH && messageId) {
@@ -61,6 +62,7 @@ export class TelegramIntegration {
       const newMessage = await this.bot.sendMessage(chatId, text, {
         parse_mode: "MarkdownV2",
         disable_web_page_preview: true,
+        reply_to_message_id: replyToMessageId,
       });
       return newMessage.message_id;
     } catch (error) {
@@ -74,6 +76,7 @@ export class TelegramIntegration {
       const fallbackMsg = await this.bot.sendMessage(chatId, truncated, {
         parse_mode: "MarkdownV2",
         disable_web_page_preview: true,
+        reply_to_message_id: replyToMessageId,
       });
       return fallbackMsg.message_id;
     }
@@ -108,9 +111,25 @@ export class TelegramIntegration {
       return;
     }
     try {
-      // Send initial message
-      const sentMessage = await this.bot.sendMessage(chatId, "Thinking...");
-      let currentMessageId = sentMessage.message_id;
+      // Start typing action loop
+      let stopTyping = false;
+      const typingIntervalMs = 5000; // Telegram typing status lasts a few seconds; refresh periodically
+      const triggerTyping = async () => {
+        try {
+          await this.bot.sendChatAction(chatId, "typing");
+        } catch (e) {
+          // Non-fatal; ignore typing errors
+        }
+      };
+      // Immediately show typing, then keep it alive until we finish
+      await triggerTyping();
+      const typingTimer = setInterval(() => {
+        if (stopTyping) {
+          clearInterval(typingTimer);
+          return;
+        }
+        void triggerTyping();
+      }, typingIntervalMs);
 
       const runtimeContext = new RuntimeContext<SupportRuntimeContext>();
       runtimeContext.set("group_chat", msg.chat.type === "group");
@@ -133,11 +152,13 @@ export class TelegramIntegration {
         runtimeContext,
       });
 
-      // Final update
+      // Stop typing and send final message
+      stopTyping = true;
       await this.updateOrSplitMessage(
         chatId,
-        currentMessageId,
-        this.escapeMarkdown(generate.text)
+        undefined,
+        this.escapeMarkdown(generate.text),
+        msg.message_id
       );
     } catch (error) {
       if (error instanceof Error) {

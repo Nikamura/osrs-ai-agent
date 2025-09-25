@@ -48,3 +48,9 @@ for (const p of pages) {
 - Start: `npm start`
 
 
+### Telegram UX
+
+- The bot now shows a typing indicator instead of sending a placeholder "Thinking..." message. It keeps typing active while processing and stops when the final response is sent.
+- Final responses in Telegram now reply directly to the user's original message for better threading.
+
+

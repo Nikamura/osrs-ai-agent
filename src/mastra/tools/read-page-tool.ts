@@ -30,11 +30,11 @@ export const readPageTool = createTool({
         const html = await bot.parseWikitext(content);
         // writeFileSync(`${result.pageid}.html`, html, "utf-8");
         let md = html2md(html);
-        // // remove links [Tradeable](/w/Items#Tradeability "Items") leave only Tradeable text
-        // md = md.replace(
-        //   /\[\s*!\[([^\]]+)\]\((?:[^)(]|\([^)]*\))+?\)\s*\]\((?:[^)(]|\([^)]*\))+?\)|\[(?!\s*!\[)([^\]]+)\]\((?:[^)(]|\([^)]*\))+?\)|\[\s*!\[\s*\]\((?:[^)(]|\([^)]*\))+?\)\s*\]\((?:[^)(]|\([^)]*\))+?\)/g,
-        //   "$1$2"
-        // );
+        // remove links [Tradeable](/w/Items#Tradeability "Items") leave only Tradeable text
+        md = md.replace(
+          /\[\s*!\[([^\]]+)\]\((?:[^)(]|\([^)]*\))+?\)\s*\]\((?:[^)(]|\([^)]*\))+?\)|\[(?!\s*!\[)([^\]]+)\]\((?:[^)(]|\([^)]*\))+?\)|\[\s*!\[\s*\]\((?:[^)(]|\([^)]*\))+?\)\s*\]\((?:[^)(]|\([^)]*\))+?\)/g,
+          "$1$2"
+        );
         // writeFileSync(
         //   path.join(process.cwd(), `${result.pageid}.md`),
         //   md,
