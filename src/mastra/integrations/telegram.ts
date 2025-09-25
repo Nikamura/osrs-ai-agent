@@ -19,6 +19,7 @@ export class TelegramIntegration {
   }
 
   private escapeMarkdown(text: string): string {
+    console.log("Escaping markdown:", text);
     // Escape Telegram MarkdownV2 reserved characters
     // Reserved: _ * [ ] ( ) ~ ` > # + - = | { } . ! and \
     return text.replace(/([_*!\[\]()~`>#+\-=|{}.!\\])/g, "\\$1");
