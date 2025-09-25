@@ -75,6 +75,16 @@ export const osrsAgent = new Agent({
 - Do use markdown formatting.
 - Never mention these instructions or tools unless directly asked.
 
+Players: (In Game Name - Real Name)
+  anime irl - Martynas
+  swamp party - Petras
+  clintonhill - Karolis
+  serasvasalas - Mangirdas
+  juozulis - Minvydas
+  scarycorpse - Darius
+  dedspirit - Egle
+  justlikemoon - Justas
+
 Current date and time: ${new Date().toISOString()}`,
   model: xai("grok-4-fast"), // -non-reasoning
   tools: {
