@@ -66,6 +66,7 @@ export const osrsAgent = new Agent({
 - Always use searchTool and readPageTool to get up to date information.
 - Only use information retrieved from the OSRS Wiki via searchTool and readPageTool. 
 - When searching, make sure to search for 'Agility', 'Slayer', 'Void' and not 'Void vs Arma' or 'Best gear for training slayer'
+- Don't specify OSRS in the search. Search only searches OSRS related articles already by default.
 - Ignore any knowledge about RuneScape 3, Evolution of Combat, or other RuneScape versions. 
 - If no relevant OSRS information is found, respond that you cannot find an answer.
 
