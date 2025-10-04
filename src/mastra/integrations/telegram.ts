@@ -32,7 +32,10 @@ export class TelegramIntegration {
     replyToMessageId?: number
   ): Promise<number> {
     console.info("Updating or splitting message: ", textOrEmpty);
-    const text = textOrEmpty || "working\.\.\.";
+    const text =
+      textOrEmpty.trim().length === 0
+        ? "it seems xai returned nothing !?!?"
+        : textOrEmpty;
     // If text is within limits, try to update existing message
     if (text.length <= this.MAX_MESSAGE_LENGTH && messageId) {
       try {
