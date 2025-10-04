@@ -18,11 +18,7 @@ export const searchTool = createTool({
   description:
     "Search the OSRS Wiki for a given query. Searches using mediawiki search api.",
   inputSchema: z.object({
-    query: z
-      .string()
-      .describe(
-        "The query to search for on OSRS wiki. It's wikipedia like search, so we should search for 'Agility', 'Slayer', 'Void' and not 'Void vs Arma' or 'Best gear for training slayer'"
-      ),
+    query: z.string().describe("The query to search for on OSRS wiki.'"),
     max: z
       .number()
       .default(2)
