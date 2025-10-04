@@ -31,7 +31,7 @@ export class TelegramIntegration {
     textOrEmpty: string,
     replyToMessageId?: number
   ): Promise<number> {
-    console.debug("Updating or splitting message: ", textOrEmpty);
+    console.info("Updating or splitting message: ", textOrEmpty);
     const text = textOrEmpty || "working\.\.\.";
     // If text is within limits, try to update existing message
     if (text.length <= this.MAX_MESSAGE_LENGTH && messageId) {
