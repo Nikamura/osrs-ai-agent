@@ -141,7 +141,7 @@ export class TelegramIntegration {
       runtimeContext.set("is_admin", ["1388135549"].includes(userId));
 
       const agent = this.mastra.getAgent("osrsAgent");
-      const generate = await agent.generateVNext(text, {
+      const generate = await agent.generate(text, {
         threadId, // Use chat ID as thread ID
         resourceId, // Use user ID as resource ID
         context: [
