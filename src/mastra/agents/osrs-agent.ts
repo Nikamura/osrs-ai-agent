@@ -9,7 +9,6 @@ import { Memory } from "@mastra/memory";
 import { LibSQLStore, LibSQLVector } from "@mastra/libsql";
 import { getPlayerLevelsTool } from "../tools/get-player-levels-tool";
 import { getPlayerQuestsTool } from "../tools/get-player-quests-tool";
-import { searchGuidesTool } from "../tools/search-guides-tool";
 import z from "zod";
 import { TokenLimiter, ToolCallFilter } from "@mastra/memory/processors";
 
@@ -80,10 +79,9 @@ Players: (In Game Name - Real Name)
   justlikemoon - Justas
 
 Current date and time: ${new Date().toISOString()}`,
-  model: xai("grok-4-fast"), // -non-reasoning
+  model: xai("grok-4-fast-reasoning"), // -non-reasoning
   tools: {
     searchTool,
-    searchGuidesTool,
     readPageTool,
     getPlayerLevelsTool,
     getPlayerQuestsTool,
