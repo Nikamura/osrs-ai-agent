@@ -28,9 +28,10 @@ export class TelegramIntegration {
   private async updateOrSplitMessage(
     chatId: number,
     messageId: number | undefined,
-    text: string,
+    textOrEmpty: string,
     replyToMessageId?: number
   ): Promise<number> {
+    const text = textOrEmpty || "working...";
     // If text is within limits, try to update existing message
     if (text.length <= this.MAX_MESSAGE_LENGTH && messageId) {
       try {
